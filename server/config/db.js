@@ -4,13 +4,17 @@ require('dotenv').config();
 // Parse DATABASE_URL if provided (Railway format)
 let dbConfig;
 
-if (process.env.DATABASE_URL) {
+if (process.env.DATABASE_URL || process.env.MYSQL_URL) {
   // Railway provides DATABASE_URL or MYSQL_URL
   const dbUrl = process.env.DATABASE_URL || process.env.MYSQL_URL;
   console.log('📡 Using DATABASE_URL for MySQL connection');
 
   // Parse the URL: mysql://user:password@host:port/database
   const url = new URL(dbUrl);
+
+  // Check if using Railway internal network (no SSL needed)
+  const isInternalNetwork = url.hostname.includes('railway.internal');
+
   dbConfig = {
     host: url.hostname,
     user: url.username,
@@ -21,12 +25,17 @@ if (process.env.DATABASE_URL) {
     connectionLimit: 10,
     queueLimit: 0,
     enableKeepAlive: true,
-    keepAliveInitialDelay: 0,
-    // Railway requires SSL for public connections
-    ssl: {
-      rejectUnauthorized: false
-    }
+    keepAliveInitialDelay: 0
   };
+
+  // Only use SSL for external connections
+  if (!isInternalNetwork) {
+    dbConfig.ssl = {
+      rejectUnauthorized: false
+    };
+  }
+
+  console.log(`🔗 Connecting to: ${url.hostname} (SSL: ${!isInternalNetwork})`);
 } else {
   // Use individual environment variables
   console.log('📡 Using individual DB credentials');
