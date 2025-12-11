@@ -28,11 +28,13 @@ if (!fs.existsSync(uploadsDir)) {
 const authRoutes = require('./routes/auth');
 const memesRoutes = require('./routes/memes');
 const reactionsRoutes = require('./routes/reactions');
+const setupRoutes = require('./routes/setup');
 
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/memes', memesRoutes);
 app.use('/api/reactions', reactionsRoutes);
+app.use('/api/setup', setupRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
